@@ -67,7 +67,11 @@ GET LINKS FROM HTML
 
 #get HTML with page scroll
 def get_html_scroll(url):
-    browser = webdriver.Firefox()
+    chrome_options = webdriver.ChromeOptions()
+    chrome_options.add_argument('--headless')
+    chrome_options.add_argument('--no-sandbox')
+    chrome_options.add_argument('--disable-dev-shm-usage')
+    browser = webdriver.Chrome('chromedriver', chrome_options=chrome_options)
     browser.get(url)
     lenOfPage = browser.execute_script("window.scrollTo(0, document.body.scrollHeight);var lenOfPage=document.body.scrollHeight;return lenOfPage;")
     match=False
