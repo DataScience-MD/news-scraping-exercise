@@ -29,7 +29,7 @@ def save_pickle(output_path, pickle_object, file_name):
 
 #open pickle file
 def open_pickle(pickle_path):
-    with open(pickle_path, 'r') as pickle_file:
+    with open(pickle_path, 'rb') as pickle_file:
         object_name = pickle.load(pickle_file)
     return object_name
 
