@@ -16,3 +16,5 @@ This repository contains code and supporting documents for the News Scraping exe
   * [ ] Secondary Task: Build Colab notebook that runs web scraping module
   * [ ] Secondary Task: Create requirements file to faciliate dependancy installation
   * [ ] Secondary Task: Build section in colab notebook that exports data to user's google drive
+  * [ ] TODO Add New feature, execute news_reauters with selenium using chrome or firefox based on a passed variable with error checking
+
