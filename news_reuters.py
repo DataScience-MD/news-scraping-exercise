@@ -4,13 +4,17 @@ Created on Sat Jul 13 15:23:39 2019
 
 @author: Dr. Mark M. Bailey | National Intelligence 
 # Changelog 18 May 2020 by team Bad Ozone Grasshoppers
-- 1. main() updated to take two options browser agent and news_dump_filename
--- 1.2. browser agents supported are 'Firefox' and 'Chrome'
+- 1. main() updated to take two options "browser_agent" and "news_dump_filename"
+  -- 1.1. browser agents supported are 'Firefox' and 'Chrome'
+  -- 1.2. filename should be passed in "[filename].json" format
+
 - 2. Updated to use pandas to read and save JSON files instead of pickle files 
--    This was done to reduce code complexity and increase security (below are updates)
--- 2.1. save_pickle() replaced with pd.DataFrame.to_json()
--- 2.2. open_pickle() replaced with pd.DataFrame.read_json()
--- 2.3. concat_lists() replaced with pd.concat()
+     This was done to reduce code complexity and increase security (below are updates)
+  -- 2.1. save_pickle() replaced with pd.DataFrame.to_json()
+  -- 2.2. open_pickle() replaced with pd.DataFrame.read_json()
+  -- 2.3. concat_lists() replaced with pd.concat()
+  
+- 3. Updated get_soup_links() function to remove duplicate links from list prior to returning list
 """
 
 #News Scrape
@@ -135,6 +139,10 @@ def get_soup_links(soup):
     for link in soup.find_all('a'):
         out_link = link.get('href')
         links.append(out_link)
+    #Remove duplicates from links
+    #Below line removes all duplicate links prior to passing the list of links back
+    #This is accomplished by converting the list of links into a dictionary and then back to a list
+    links = list(dict.fromkeys(links))
     return links
 
 """
@@ -219,9 +227,10 @@ def reuters(old_url_set, browser_agent):
 
 """python
 MAIN SCRIPT
+Updated function to allow user to specify a browser agent and news_dump_object filename
+If not specified the code will default to a browser agent of Firefox and filename of news_dump_object.json
 """
-#updated function to allow user to specify a browser agent and news_dump_object filename
-#If not specified the code will default to  Firefox and news_dump_object.json
+
 def main(browser_agent ="Firefox", news_object_file ='news_dump_object.json'):
     #Check if the requested browser agent is Firefox or Chrome
     #If no agent is passed code will defualt to Firefox 
@@ -232,7 +241,7 @@ def main(browser_agent ="Firefox", news_object_file ='news_dump_object.json'):
         exit(1)
     news_object_path = os.getcwd()
     output_path = os.getcwd()
-    #updated to allow user to specify a news_object_filename
+    #updated below line of code to allow user to specify a news_object_filename
     old_news_df, old_url_set = open_file(news_object_path, news_object_file)
     reuters_list_df = pd.DataFrame(reuters(old_url_set, browser_agent))
     #Updated to use pandas concat function
