@@ -7,14 +7,21 @@ Created on Sat Jul 13 15:23:39 2019
 - 1. main() updated to take two options "browser_agent" and "news_dump_filename"
   -- 1.1. browser agents supported are 'Firefox' and 'Chrome'
   -- 1.2. filename should be passed in "[filename].json" format
+  -- 1.3. If filename provided points to non-existent file the user will be notified and the file will be created
 
 - 2. Updated to use pandas to read and save JSON files instead of pickle files 
-     This was done to reduce code complexity and increase security (below are updates)
+     This was done to reduce code complexity and increase security
   -- 2.1. save_pickle() replaced with pd.DataFrame.to_json()
   -- 2.2. open_pickle() replaced with pd.DataFrame.read_json()
   -- 2.3. concat_lists() replaced with pd.concat()
   
 - 3. Updated get_soup_links() function to remove duplicate links from list prior to returning list
+
+- 4. Added check_chrome() feature to install chrome driver if it is not found 
+
+- 5. Updated on 19 May to support modified https://www.reuters.com/theWire webpage
+  -- New webpage is no longer an infinite scroll page and links are relative vs absolute
+
 """
 
 # News Scrape
@@ -30,8 +37,6 @@ from urllib.parse import urlparse
 import zipfile
 import platform
 import base64
-# import pickle # no longer needed in json functions replaced pickle
-# import json # no longer needed pandas library simplified codebase
 
 # Import methods
 from selenium.webdriver.chrome.options import Options
@@ -44,39 +49,26 @@ from bs4 import BeautifulSoup
 GENERAL FUNCTIONS
 """
 
-
-# save object to JSON
-# def save_json(output_path, json_object, file_name):
-#    output_name = os.path.join(output_path, file_name + '.json')
-#    with open(output_name, 'w') as json_file:
-#        json.dump(json_object, json_file)
-
-# open JSON file
-# def open_json(json_path):
-#    with open(json_path, 'rb') as json_file:
-#        object_name = json.load(json_file)
-#    return object_name
-
-# save object to pickle
-# Deprecated replaced by save_json function
-# def save_pickle(output_path, pickle_object, file_name):
-#    output_name = os.path.join(output_path, file_name + '.pkl')
-#    with open(output_name, 'wb') as pkl_object:
-#        pickle.dump(pickle_object, pkl_object)
-
-# open pickle file
-# Deprecated by open_json function
-# def open_pickle(pickle_path):
-#    with open(pickle_path, 'rb') as pickle_file:
-#        object_name = pickle.load(pickle_file)
-#    return object_name
-
-# Get urls from news object
-# updated to use pandas dataframe to parse the URLs and store the set
+# Open news object file
+# Accepts filepath (news_object_path) and filename (news_object_file) as strings
+# Target file must be JSON format with columns ["date", "time", "source", "Title", "Text", "url"]
+# If target file does not exist it will be created 
+# If the target file is badly malformed the file will be overwritten
+# Pandas library is used to open the JSON file as a dataframe and access the set of URLs
+# Code provides basic format checking of input file based on the "url" column if that column does not exist program crashes with exception warning
 def open_file(news_object_path, news_object_file):
     news_object_file = os.path.join(news_object_path, news_object_file)
-    old_news_df = pd.read_json(news_object_file)
-    old_url_set = set(old_news_df['url'].values)
+    try:
+        old_news_df = pd.read_json(news_object_file)
+    except ValueError:
+        #print('NOTICE: News object file [', news_object_file, '] not found or unreadable.  \nScrapper will create/overwrite the file upon execution completion.')
+        old_news_df = pd.DataFrame(columns = ['date', 'time', 'source', 'Title', 'Text', 'url'])
+    try:
+        old_url_set = set(old_news_df['url'].values)
+    except:
+        print('**********************************************************************************\n' + 
+              'WARNING: News object file [', news_object_file, '] is malformed!.\n' +
+              'JSON file must be formated with columns ["date", "time", "source", "Title", "Text", "url"]')
     return old_news_df, old_url_set
 
 
@@ -92,14 +84,6 @@ def url_check(old_url_set, url):
     return check
 
 
-# Concat outut lists
-# Deprecated now using pandas concat function.
-# def concat_lists(out_lists):
-#    output = []
-#    for outlist in out_lists:
-#        output = output + outlist
-#    return output
-
 """
 GET LINKS FROM HTML
 """
@@ -107,7 +91,7 @@ GET LINKS FROM HTML
 
 # get HTML with page scroll
 # Function updated to allow user to define the browser agent
-# Browser flag allows the userpa to define the type of browser used by selenium
+# Browser flag allows the user to define the type of browser used by selenium
 # Code supports Firefox and Chrome, default is Firefox if no browser agent is specified
 def get_html_scroll(url, browser_agent="Firefox"):
     # calls the webdriver based on the user's selection
@@ -121,6 +105,8 @@ def get_html_scroll(url, browser_agent="Firefox"):
         browser = webdriver.Chrome('chromedriver', options=chrome_options) # Using 'options=' to fix deprecation warning
     # else:
     # else section intentionally empty and reserved for future use
+    # the else section is not needed in this code as get_html_scroll() is designed to be called by main()
+    # and the main() process checks the browser_agent prior to passing to get_html_scroll()
 
     browser.get(url)
     lenOfPage = browser.execute_script("window.scrollTo(0, document.body.scrollHeight);" +
@@ -173,11 +159,17 @@ REUTERS FUNCTIONS
 
 
 # get article links
+# This function stopped working on 19 May 2020 when Reuters updated their https://www.reuters.com/theWire page
+# The https://www.reuters.com/theWire page updated to change from a infinite scroll to paginated
+# Additionally, the updated webpage uses relative not absolute links
+# Fixed code by prepending https://www.reuters.com to link if it is missing
 def get_articles_reuters(links, old_url_set):
     articles = []
     for link in links:
         try:
-            if 'article' in link:
+             if '/article/' in link:
+                if 'https://www.reuters.com' not in link: 
+                    link = 'https://www.reuters.com' + link
                 if not url_check(old_url_set, link):
                     articles.append(link)
         except:
@@ -257,10 +249,10 @@ def reuters(old_url_set, browser_agent):
 
 
 # Get Chrome
-# Adds local support for chrome driver if not found. function in OS aware, and fetches the appropiate version of
+# Adds local support for chrome driver if not found. function in OS aware, and fetches the appropriate version of
 # chrome driver for the OS, extracts the zip, places the executable in the current working directory. This is the
 # first checked PATH option for execution flow, then /bin, then /sbin, etc. Local placement allows for simpler
-# envirment set-up, and removes the requirement to force a non standard PATH variable into sys.
+# environment set-up, and removes the requirement to force a non standard PATH variable into sys.
 def check_chrome():
     os_platform = platform.system()
 
@@ -293,42 +285,46 @@ def banner():
     print(base64.b64decode("PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CnwgICBCYWQgT3pvbmUgR3" +
                            "Jhc3Nob3BwZXJzICAgfAo9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0=").decode('utf8'))
 
-# Cleanup of temporary files
+# Cleanup of temporary file
+# Updated to use os.path.isfile() method to check if file exists
 def cleanup():
-    if open('chromedriver.exe'):
+    if os.path.isfile('chromedriver.exe'):
         os.remove('chromedriver.exe')
-    elif open('chromedriver'):
+    elif os.path.isfile('chromedriver'):
         os.remove('chromedriver')
-    elif open('geckodriver.log'):
+    elif os.path.isfile('geckodriver.log'):
         os.remove('geckodriver.log')
     return
 
 
-"""python
+"""
 MAIN SCRIPT
 Updated function to allow user to specify a browser agent and news_dump_object filename
-If not specified the code will default to a browser agent of Firefox and filename of news_dump_object.json
+If not specified the code will default to a browser agent of "Firefox" and filename of "news_dump_object.json"
+
 """
 
 
 def main(browser_agent="Chrome", news_object_file='news_dump_object.json'):
     banner()
     # Check if the requested browser agent is Firefox or Chrome
-    # If no agent is passed code will defualt to Firefox
+    # If no agent is passed code will default to Firefox
     if browser_agent == "Chrome" or browser_agent == "Firefox":
         print("Executing using", browser_agent, "webdriver")
         if browser_agent == "Chrome":
             check_chrome()
     else:
         print(browser_agent, " is not a recognized browser agent, please use 'Firefox' or 'Chrome'")
-        exit(1)
     news_object_path = os.getcwd()
     output_path = os.getcwd()
     # updated below line of code to allow user to specify a news_object_filename
-    old_news_df, old_url_set = open_file(news_object_path, news_object_file) # *** What if this is first run and there is no json? ***
+    old_news_df, old_url_set = open_file(news_object_path, news_object_file)
     reuters_list_df = pd.DataFrame(reuters(old_url_set, browser_agent))
-    # Updated to use pandas concat function
+    reuters_list_df['date'] = reuters_list_df['date'].astype('datetime64') # Formats the date column as a pandas date-time format
+    
+    # Updated to use pandas concat function 
     output_reuters_df = pd.concat([old_news_df, reuters_list_df], ignore_index=True)
+
     print('Saving news object...')
     output_file = os.path.join(output_path, news_object_file)
     # Save output to JSON file using pandas
