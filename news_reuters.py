@@ -61,7 +61,7 @@ def open_file(news_object_path, news_object_file):
     try:
         old_news_df = pd.read_json(news_object_file)
     except ValueError:
-        #print('NOTICE: News object file [', news_object_file, '] not found or unreadable.  \nScrapper will create/overwrite the file upon execution completion.')
+        #print('NOTICE: News object file [', news_object_file, '] not found or unreadable.  \nScraper will create/overwrite the file upon execution completion.')
         old_news_df = pd.DataFrame(columns = ['date', 'time', 'source', 'Title', 'Text', 'url'])
     try:
         old_url_set = set(old_news_df['url'].values)
@@ -318,9 +318,16 @@ def main(browser_agent="Chrome", news_object_file='news_dump_object.json'):
     news_object_path = os.getcwd()
     output_path = os.getcwd()
     # updated below line of code to allow user to specify a news_object_filename
-    old_news_df, old_url_set = open_file(news_object_path, news_object_file)
+    old_news_df, old_url_set = open_file(news_object_path, news_object_file) # loads the file
+    print(old_news_df.index.size, 'articles loaded from', news_object_file) # inform user of how many articles loaded
+    
+    # Run the webscraper and save output to dataframe
     reuters_list_df = pd.DataFrame(reuters(old_url_set, browser_agent))
-    reuters_list_df['date'] = reuters_list_df['date'].astype('datetime64') # Formats the date column as a pandas date-time format
+    print(reuters_list_df.index.size, 'new articles scraped') #display how many articles scraped
+    #Check if any new information was
+    if 'date' in  reuters_list_df.columns:
+        # Formats the date column as a pandas date-time format
+        reuters_list_df['date'] = reuters_list_df['date'].astype('datetime64') 
     
     # Updated to use pandas concat function 
     output_reuters_df = pd.concat([old_news_df, reuters_list_df], ignore_index=True)
