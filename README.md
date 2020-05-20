@@ -11,7 +11,7 @@ This repository contains code and supporting documents for the News Scraping exe
 
 **Requirements:** Construct a web scraping module to extract information from a U.S. News site.  
 
-**Proposed Solution:** A python script that retrieves the top 100 articles from Reuters website.  A Colab notebook will then be used to load all relevant libraries, GitHub code, execute the python code, and then save the resulting information.  This approach is being performed as it enables execution of the code from any location regardless of client configuration.  Additionally, this code may assist other distance learning students that have issues with their local install of Python.
+**Proposed Solution:** A python script that retrieves the top 20 articles from Reuters website.  A Colab notebook will then be used to load all relevant libraries, GitHub code, execute the python code, and then save the resulting information.  This approach is being performed as it enables execution of the code from any location regardless of client configuration.  Additionally, this code may assist other distance learning students that have issues with their local install of Python.
 
 **Task List**
 * [X] Primary task: Construct a web scraping module for a U.S. News site
