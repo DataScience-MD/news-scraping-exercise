@@ -92,7 +92,7 @@ GET LINKS FROM HTML
 # get HTML with page scroll
 # Function updated to allow user to define the browser agent
 # Browser flag allows the user to define the type of browser used by selenium
-# Code supports Firefox and Chrome, default is Firefox if no browser agent is specified
+# Code supports Firefox and Chrome, default is Chrome if no browser agent is specified
 def get_html_scroll(url, browser_agent="Firefox"):
     # calls the webdriver based on the user's selection
     if browser_agent == "Firefox":
@@ -300,7 +300,7 @@ def cleanup():
 """
 MAIN SCRIPT
 Updated function to allow user to specify a browser agent and news_dump_object filename
-If not specified the code will default to a browser agent of "Firefox" and filename of "news_dump_object.json"
+If not specified the code will default to a browser agent of "Chrome" and filename of "news_dump_object.json"
 
 """
 
@@ -308,7 +308,7 @@ If not specified the code will default to a browser agent of "Firefox" and filen
 def main(browser_agent="Chrome", news_object_file='news_dump_object.json'):
     banner()
     # Check if the requested browser agent is Firefox or Chrome
-    # If no agent is passed code will default to Firefox
+    # If no agent is passed code will default to Chrome
     if browser_agent == "Chrome" or browser_agent == "Firefox":
         print("Executing using", browser_agent, "webdriver")
         if browser_agent == "Chrome":
