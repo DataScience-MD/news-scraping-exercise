@@ -38,6 +38,7 @@ import zipfile
 import platform
 import base64
 from textblob import TextBlob
+import numpy as np
 
 # Import methods
 from selenium.webdriver.chrome.options import Options
@@ -359,3 +360,57 @@ def open_text(file_path):
 
 text = open_text(file_path)
 blob = TextBlob(text)
+blob_sentences = blob.sentences
+
+corona_sentences = []
+for sentence in blob_sentences:
+    if 'corona' in sentence:
+        corona_sentences.append(sentence)
+
+trump_sentences = []
+trump_polarity = []
+trump_subjectivity = []
+for sentence in corona_sentences:
+    if 'Trump' in sentence:
+        trump_sentences.append(sentence)
+        trump_polarity.append(sentence.sentiment.polarity)
+        trump_subjectivity.append(sentence.sentiment.subjectivity)
+print("Trump Coronavirus Polarity:", np.mean(trump_polarity))
+print("Trump Coronavirus Sujectivity:", np.mean(trump_subjectivity))
+print("Trump Coronavirus Mentions:", len(trump_sentences))
+
+biden_sentences = []
+biden_polarity = []
+biden_subjectivity = []
+for sentence in corona_sentences:
+    if 'Biden' in sentence:
+        biden_sentences.append(sentence)
+        biden_polarity.append(sentence.sentiment.polarity)
+        biden_subjectivity.append(sentence.sentiment.subjectivity)
+print("Biden Coronavirus Polarity:", np.mean(biden_polarity))
+print("Biden Coronavirus Sujectivity:", np.mean(biden_subjectivity))
+print("Biden Coronavirus Mentions:", len(biden_sentences))
+
+china_sentences = []
+china_polarity = []
+china_subjectivity = []
+for sentence in corona_sentences:
+    if 'China' in sentence:
+        china_sentences.append(sentence)
+        china_polarity.append(sentence.sentiment.polarity)
+        china_subjectivity.append(sentence.sentiment.subjectivity)
+print("China Coronavirus Polarity:", np.mean(china_polarity))
+print("China Coronavirus Sujectivity:", np.mean(china_subjectivity))
+print("China Coronavirus Mentions:", len(china_sentences))
+
+russia_sentences = []
+russia_polarity = []
+russia_subjectivity = []
+for sentence in corona_sentences:
+    if 'Russia' in sentence:
+        russia_sentences.append(sentence)
+        russia_polarity.append(sentence.sentiment.polarity)
+        russia_subjectivity.append(sentence.sentiment.subjectivity)
+print("Russia Coronavirus Polarity:", np.mean(russia_polarity))
+print("Russia Coronavirus Sujectivity:", np.mean(russia_subjectivity))
+print("Russia Coronavirus Mentions:", len(russia_sentences))
