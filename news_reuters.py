@@ -37,6 +37,7 @@ from urllib.parse import urlparse
 import zipfile
 import platform
 import base64
+from textblob import TextBlob
 
 # Import methods
 from selenium.webdriver.chrome.options import Options
@@ -346,3 +347,15 @@ EXECUTE SCRIPT
 """
 if __name__ == '__main__':
     output_reuters = main()
+
+"""
+TEXT ANALYSIS
+"""
+file_path = r'news_dump_object.json'
+def open_text(file_path):
+    with open(file_path, 'r') as document:
+        text = document.read()
+    return text
+
+text = open_text(file_path)
+blob = TextBlob(text)
