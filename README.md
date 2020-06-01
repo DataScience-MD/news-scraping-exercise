@@ -4,7 +4,7 @@
 
 Modifications to the main repo by team Bad Ozone Grasshoppers 
 ## About
-This repository contains code and supporting documents for the News Scraping exercise.  Modifications to this code were made by the Bad Ozone Grasshoppers.
+This repository contains code and supporting documents for the News Scraping exercise.  Modifications to this code were made by the Bad Ozone Grasshoppers.  Additional Analysis added at by Secret Squirrels.
 
 ## BLUF
 **Usage:** Execute [Colab based Jupyter notebook](https://github.com/PurpleDin0/news-scraping-exercise/blob/master/Execution_Notebook.ipynb) to run code in online sandbox, or run [news_reuters.py](https://github.com/PurpleDin0/news-scraping-exercise/blob/master/news_reuters.py) from a python3 environment. 
